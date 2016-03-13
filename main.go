@@ -5,6 +5,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -97,11 +98,16 @@ func tryInt(val string) (int64, error) {
 	if err != nil {
 		return 0, errors.New("can't convert to int64")
 	}
+	upper := int64(math.Pow(2, 31) - 1)
+	lower := int64(-1 * math.Pow(2, 31))
+	if f > upper || f < lower {
+		log.Warnf("32-bit systems may not accept this value: %v", f)
+	}
 	return f, nil
 }
 
 func simpleParse(val string) interface{} {
-	i, err := strconv.ParseInt(val, 10, 64)
+	i, err := tryInt(val)
 	if err == nil {
 		return i
 	}
