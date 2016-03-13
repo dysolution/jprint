@@ -8,7 +8,7 @@ Per the JSON spec, keys are strings. All values are strings by default.
 ```bash
 $ jprint foo=bar
 {
-  "foo": "bar"
+    "foo": "bar"
 }
 ```
 
@@ -17,9 +17,9 @@ Integers and floating-point numbers are detected and converted into 64-bit repre
 ```bash
 $ jprint tau=6.283185 right_out=5 proprietary=false
 {
-  "proprietary": false,
-  "right_out": 5,
-  "tau": 6.283185
+    "proprietary": false,
+    "right_out": 5,
+    "tau": 6.283185
 }
 ```
 
@@ -28,14 +28,30 @@ jprint uses Go's `json.MarshalIndent`, which sorts keys alphabetically by defaul
 ```bash
 $ jprint foo=bar num=3 a_few_numbers=[1,2,3]
 {
-  "a_few_numbers": [
-    1,
-    2,
-    3
-  ],
-  "foo": "bar",
-  "num": 3
+    "a_few_numbers": [
+        1,
+        2,
+        3
+    ],
+    "foo": "bar",
+    "num": 3
 }
+```
+
+You can specify the number of spaces to indent pretty-printed JSON:
+
+```bash
+$ jprint -i 2 foo=bar
+{
+  "foo": "bar"
+}
+```
+
+Forcing single-line output makes it easier to embed jprint output in other commands, logs, etc.:
+
+```bash
+$ jprint -o foo=bar
+{"foo":"bar"}
 ```
 
 # Installation
