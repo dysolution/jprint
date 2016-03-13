@@ -8,19 +8,50 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 func init() {
-	flag.Var(paramsFlags, "p", "key/value pair, e.g.: foo=bar")
+	flag.BoolVar(&oneline, "o", false, "oneline (disable pretty-printing)")
+	flag.IntVar(&indent, "i", 4, "number of spaces to indent pretty-printed output")
+	log.SetLevel(log.WarnLevel)
+}
+
+func main() {
+	flag.Parse()
+	log.Debugf("args: %v", flag.Args())
+	if flag.NFlag() < 1 && flag.NArg() < 1 {
+		usage()
+	} else {
+		paramsFlags.parseArgs(os.Args[1:])
+		fmt.Print(paramsFlags)
+	}
+}
+
+var indent int
+var oneline bool
+var paramsFlags = make(params)
+
+func usage() {
+	fmt.Fprintf(os.Stderr, "Usage: %s [FLAGS] <key=value> [...]\n", os.Args[0])
+	flag.PrintDefaults()
 }
 
 type params map[string]interface{}
 
-var paramsFlags = make(params)
-
 func (p params) String() string {
-	out, _ := json.MarshalIndent(p, "", "  ")
-	// out, _ := json.Marshal(p)
+	var indentPhrase []byte
+	for c := 0; c < indent; c++ {
+		indentPhrase = append(indentPhrase, []byte(" ")[0])
+	}
+
+	var out []byte
+	if oneline {
+		out, _ = json.Marshal(p)
+	} else {
+		out, _ = json.MarshalIndent(p, "", string(indentPhrase))
+	}
 	return fmt.Sprintf("%s", out)
 }
 
@@ -45,8 +76,11 @@ func parseKV(input string) (string, string, error) {
 
 func (p params) parseArgs(input []string) {
 	for _, param := range input {
-		val := simpleParse(param).(string)
-		p.Set(val)
+
+		val := simpleParse(param)
+		if v, ok := val.(string); ok {
+			p.Set(v)
+		}
 	}
 }
 
@@ -113,10 +147,4 @@ func simpleParse(val string) interface{} {
 	}
 
 	return val
-}
-
-func main() {
-	paramsFlags.parseArgs(os.Args[1:])
-	flag.Parse()
-	fmt.Print(paramsFlags)
 }
